@@ -1,0 +1,5 @@
+# ignore all binary executive files in directory './bin'
+/bin/*
+
+# keep empty folder './bin' tracked by using a empty file '.gitkeep'
+!/bin/.gitkeep
