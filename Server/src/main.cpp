@@ -14,21 +14,27 @@
 #include <windows.h>
 #include <winsock2.h>
 
+#include "data_package.hpp"
+
 int main()
 {
+    using namespace sheer_rey;
+    using std::cout, std::cin, std::cerr, std::endl;
+    using std::string;
+
     /* Winsock Initialization Begin */
     WSAData wsa_data;
     if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
-        std::cerr << "WSAStartup() error!" << std::endl;
+        cerr << "WSAStartup() error!" << endl;
     /* Winsock Initialization End */
 
     /* Main Body Begin */
     // create server socket
     SOCKET server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (server_socket == INVALID_SOCKET)
-        std::cerr << "Server socket initialization fail..." << std::endl;
+        cerr << "Server socket initialization fail..." << endl;
     else
-        std::cout << "Server socket initialization successful..." << std::endl;
+        cout << "Server socket initialization successful..." << endl;
 
     // set server socket's address and bind
     SOCKADDR_IN server_addr;
@@ -36,38 +42,80 @@ int main()
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(1314);
     if (bind(server_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == SOCKET_ERROR)
-        std::cerr << "Bind port fail..." << std::endl;
+        cerr << "Bind port fail..." << endl;
     else
-        std::cout << "Bind port successful..." << std::endl;
+        cout << "Bind port successful..." << endl;
 
     // listen to binded port
     if (listen(server_socket, 5) == SOCKET_ERROR)
-        std::cerr << "Listen to port fail..." << std::endl;
+        cerr << "Listen to port fail..." << endl;
     else
-        std::cout << "Listen to port successful..." << std::endl;
+        cout << "Listen to port successful..." << endl;
 
     // create client socket
-    SOCKET server_client = INVALID_SOCKET;
+    SOCKET handled_socket = INVALID_SOCKET;
     SOCKADDR_IN client_addr;
     int client_addr_lenth = sizeof(client_addr);
 
     while (true)
     {
         // accept client request
-        server_client = accept(server_socket, (sockaddr *)&client_addr, &client_addr_lenth);
-        if (server_client == INVALID_SOCKET)
-            std::cerr << "accept client socket error..." << std::endl;
+        handled_socket = accept(server_socket, (sockaddr *)&client_addr, &client_addr_lenth);
+        if (handled_socket == INVALID_SOCKET)
+            cerr << "accept client socket error..." << endl;
         else
-            std::cout << "accept client socket success..." << std::endl;
-        std::cout << "Client Addr: " << inet_ntoa(client_addr.sin_addr)
-                  << ':' << ntohs(client_addr.sin_port) << std::endl;
-        const char message[] = "Hello, I'm server!\n";
-        send(server_client, message, std::strlen(message), 0);
+            cout << "accept client socket success..." << endl;
+        cout << "Client Addr: " << inet_ntoa(client_addr.sin_addr)
+             << ':' << ntohs(client_addr.sin_port) << endl;
+
+        // exchange data with client
+        PackageHeader package_header;
+        int receive_status = 0;
+        int receive_lenth = 0;
+        while (receive_lenth < int(sizeof(package_header)))
+        {
+            receive_status = recv(handled_socket,
+                                  (char *)&package_header + receive_lenth,
+                                  int(sizeof(package_header)) - receive_lenth, 0);
+            if (receive_status == SOCKET_ERROR)
+                cerr << "Receive data error!" << endl;
+            else
+                receive_lenth += receive_status;
+        }
+
+        switch (package_header.command)
+        {
+        case CMD_Hello:
+        {
+            PackageHello message(package_header);
+            receive_lenth = receive_status = 0;
+            while (receive_lenth < int(sizeof(message) - sizeof(package_header)))
+            {
+                receive_status = recv(handled_socket,
+                                      (char *)&message + int(sizeof(package_header)) + receive_lenth,
+                                      int(sizeof(message) - sizeof(package_header)) - receive_lenth, 0);
+                if (receive_status == SOCKET_ERROR)
+                    cerr << "Receive data error!" << endl;
+                else
+                    receive_lenth += receive_status;
+            }
+            send(handled_socket, (char *)&message, sizeof(message), 0);
+        }
+        break;
+
+        case CMD_Calculator:
+            cout << "CMD Calculator..." << endl;
+            break;
+
+        default:
+            cerr << "Unidentified command." << endl;
+            break;
+        }
     }
 
     // close socket
     closesocket(server_socket);
-    closesocket(server_client);
+    closesocket(handled_socket);
     /* Main Body End */
 
     /* Winsock Cleanup Begin */

@@ -98,7 +98,7 @@
                 // specified that terminal always revealed while executed the task
                 "reveal": "always",
                 "focus": true,
-                "panel": "new"
+                "panel": "shared"
             }
         },
         /* Run task followed by comment */
@@ -135,7 +135,7 @@
                 // specified that terminal always revealed while executed the task
                 "reveal": "always",
                 "focus": true,
-                "panel": "new"
+                "panel": "shared"
             }
         }
     ]
