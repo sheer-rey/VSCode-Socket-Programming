@@ -9,6 +9,6 @@ namespace sheer_rey
   using std::string;
 
   int EchoMessage(SOCKET &client_socket);
-  int Calculator(SOCKET &client_socket);
+  int SendInfixExpression(SOCKET &client_socket);
 }
 #endif

@@ -2,18 +2,20 @@
 #define _FUNCTIONS_SERVER_
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <winsock2.h>
 
-namespace shher_rey
+#include "data_package.hpp"
+
+namespace sheer_rey
 {
+  using std::pair;
   using std::string;
   using std::vector;
 
   int EchoMessage(SOCKET server_socket);
-
-  vector<string> Infix2Suffix(const string &infix_expression);
-  double CalculatorOfSuffix(const vector<string> &suffix_expression);
+  pair<CalculateStatus, double> Calculator(const string &infix_expression);
 }
 
 #endif

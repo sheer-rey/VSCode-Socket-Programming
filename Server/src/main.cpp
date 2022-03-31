@@ -29,14 +29,15 @@ int main()
     /* Winsock Initialization End */
 
     /* Main Body Begin */
-    // create server socket
+
+    /* ↓ create server socket ↓ */
     SOCKET server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (server_socket == INVALID_SOCKET)
         cerr << "Server socket initialization fail..." << endl;
     else
         cout << "Server socket initialization successful..." << endl;
 
-    // set server socket's address and bind
+    /* ↓ set server socket's address and bind ↓ */
     SOCKADDR_IN server_addr;
     server_addr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
     server_addr.sin_family = AF_INET;
@@ -46,20 +47,20 @@ int main()
     else
         cout << "Bind port successful..." << endl;
 
-    // listen to binded port
+    /* ↓ listen to binded port ↓ */
     if (listen(server_socket, 5) == SOCKET_ERROR)
         cerr << "Listen to port fail..." << endl;
     else
         cout << "Listen to port successful..." << endl;
 
-    // create client socket
+    /* ↓ create socket for handling current request ↓ */
     SOCKET handled_socket = INVALID_SOCKET;
     SOCKADDR_IN client_addr;
     int client_addr_lenth = sizeof(client_addr);
 
     while (true)
     {
-        // accept client request
+        /* ↓ accept client request ↓ */
         handled_socket = accept(server_socket, (sockaddr *)&client_addr, &client_addr_lenth);
         if (handled_socket == INVALID_SOCKET)
             cerr << "accept client socket error..." << endl;
@@ -68,10 +69,12 @@ int main()
         cout << "Client Addr: " << inet_ntoa(client_addr.sin_addr)
              << ':' << ntohs(client_addr.sin_port) << endl;
 
-        // exchange data with client
+        /* ↓ exchange data with client ↓ */
         PackageHeader package_header;
         int receive_status = 0;
         int receive_lenth = 0;
+
+        // get package header first
         while (receive_lenth < int(sizeof(package_header)))
         {
             receive_status = recv(handled_socket,
@@ -83,12 +86,16 @@ int main()
                 receive_lenth += receive_status;
         }
 
+        // check request type
         switch (package_header.command)
         {
         case CMD_Hello:
-        {
+
+            /* ↓ echo message request ↓ */
             PackageHello message(package_header);
             receive_lenth = receive_status = 0;
+
+            // get package content except header
             while (receive_lenth < int(sizeof(message) - sizeof(package_header)))
             {
                 receive_status = recv(handled_socket,
@@ -99,11 +106,30 @@ int main()
                 else
                     receive_lenth += receive_status;
             }
+
+            // echo received message
             send(handled_socket, (char *)&message, sizeof(message), 0);
-        }
-        break;
+
+            break;
 
         case CMD_Calculator:
+            /* ↓ calculator request ↓ */
+            PackageCalculator calculator(package_header);
+            receive_lenth = receive_status = 0;
+
+            // get package content except header
+            while (receive_lenth < int(sizeof(calculator) - sizeof(package_header)))
+            {
+                receive_status = recv(handled_socket,
+                                      (char *)&calculator + int(sizeof(package_header)) + receive_lenth,
+                                      int(sizeof(calculator) - sizeof(package_header)) - receive_lenth, 0);
+                if (receive_status == SOCKET_ERROR)
+                    cerr << "Receive data error!" << endl;
+                else
+                    receive_lenth += receive_status;
+            }
+
+            
             cout << "CMD Calculator..." << endl;
             break;
 
@@ -113,7 +139,7 @@ int main()
         }
     }
 
-    // close socket
+    /* ↓ close socket ↓ */
     closesocket(server_socket);
     closesocket(handled_socket);
     /* Main Body End */

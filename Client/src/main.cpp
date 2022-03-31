@@ -31,24 +31,27 @@ int main()
     /* Winsock Initialization End */
 
     /* Main Body Begin */
-    // create client socket
+
+    /* ↓ create client socket ↓ */
     SOCKET client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == INVALID_SOCKET)
         cerr << "Server socket initialization fail..." << endl;
     else
         cout << "Server socket initialization successful..." << endl;
 
-    // set client socket's address and connect to server
+    /* ↓ set client socket's address and connect to server ↓ */
     SOCKADDR_IN server_addr = {};
     server_addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(1314);
+
+    // connect to server
     if (connect(client_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == SOCKET_ERROR)
         cerr << "Connect to server fail..." << endl;
     else
         cout << "Connect to server successful..." << endl;
 
-    // exchange data with server
+    /* ↓ exchange data with server and user ↓ */
     cout << "What you want to do? (enter the number, q to quit): " << endl;
     cout << "1. Send message to server and echo." << endl;
     cout << "2. Send infix expression to server's calculator." << endl;
@@ -74,7 +77,7 @@ int main()
                 break;
 
             case '2':
-                /* code */
+                SendInfixExpression(client_socket);
                 break;
 
             case 'q':
@@ -91,7 +94,7 @@ int main()
         cout << "2. Send infix expression to server's calculator." << endl;
     }
 
-    // close client socket
+    /* ↓ close client socket ↓ */
     closesocket(client_socket);
     /* Main Body End */
 
