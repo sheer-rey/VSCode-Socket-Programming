@@ -96,6 +96,7 @@ namespace sheer_rey
   enum CalculateStatus
   {
     cSuccess,
+    cInfixEmpty,
     cInfixError,
     cDevidedBy0,
     cUnknownError,

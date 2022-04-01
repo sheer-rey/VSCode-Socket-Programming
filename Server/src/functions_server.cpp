@@ -24,6 +24,8 @@ namespace sheer_rey
    * @return false: input \p infix expression is not valid
    * @brief check if the infix expression is valid
    * @note this function will remove spaces and replace brackets of input infix expression
+   * @note this function only used in current source file.
+   * @warning this function may modify the real parameter \p infix
    * **************************************************************************/
   bool IsInfixValid(string &infix)
   {
@@ -135,7 +137,9 @@ namespace sheer_rey
           break;
 
         default:
-          // infix[i] is a digit
+          // infix[i] is neither a digit nor any symbols above, that means infix
+          // is invalid
+          return false;
           break;
         }
     }
@@ -154,6 +158,7 @@ namespace sheer_rey
    * @brief translate infix expression to suffix expression for calculate
    * @note if there's any error during runtime, the function will return a vector
    *       with only one element string of "error"
+   * @note this function only used in current source file.
    * **************************************************************************/
   vector<string> Infix2Suffix(const string &infix_expression)
   {
@@ -166,19 +171,26 @@ namespace sheer_rey
         continue;
       else
       {
+        // i-j > 0, that means there's digits before infix_expression[i]
         if (i - j)
-        {
+          // output to suffix expression vector
           suffix_expression.push_back(infix_expression.substr(j, i - j));
-        }
+
+        // if symbol stack is empty, that means there's no need to compare operator's priority
         if (symbol_stack.empty())
           symbol_stack.push(infix_expression[i]);
         else
         {
+          // symbol stack is not empty, need to compare operator's priority
           char stack_top = symbol_stack.top();
           switch (infix_expression[i])
           {
           case '*':
           case '/':
+            // if current operator is '*' or '/', pop operators whose priority
+            // is greater than or equal to current to suffix expression's vector
+            // (also '*' and '/'), stop until '(', then push current operator
+            // to symbol stack.
             while (stack_top == '*' || stack_top == '/')
             {
               suffix_expression.push_back(string(1, stack_top));
@@ -190,8 +202,13 @@ namespace sheer_rey
             }
             symbol_stack.push(infix_expression[i]);
             break;
+
           case '+':
           case '-':
+            // if current operator is '+' or '-', pop operators whose priority
+            // is greater than or equal to current to suffix expression's vector
+            // ('+', '-', '*' and '/'), stop until '(', then push current operator
+            // to symbol stack.
             while (stack_top != '(')
             {
               suffix_expression.push_back(string(1, stack_top));
@@ -203,10 +220,16 @@ namespace sheer_rey
             }
             symbol_stack.push(infix_expression[i]);
             break;
+
           case '(':
+            // if current symbol is '(', push to symbol stack directly and wait
+            // for matched ')'
             symbol_stack.push(infix_expression[i]);
             break;
+
           case ')':
+            // if current symbol is ')', pop all operators in symbol stack to suffix
+            // expression vector untill meet '(', then disgard both '(' and ')'.
             while (stack_top != '(')
             {
               suffix_expression.push_back(string(1, stack_top));
@@ -218,54 +241,94 @@ namespace sheer_rey
             }
             symbol_stack.pop();
             break;
+
           default:
+            // if there's any other symbols, that means infix expression is invalid
             suffix_expression.assign(1, "error");
             return suffix_expression;
           }
         }
+        // j used to indicate the symbol after current
         j = i + 1;
       }
     }
+
+    // push the last segment of digits to suffix expression vector
     if (i - j)
       suffix_expression.push_back(infix_expression.substr(j, i - j));
+
+    // pop all remaining symbol in symbol stack to suffix expression vector
     while (!symbol_stack.empty())
     {
       suffix_expression.push_back(string(1, symbol_stack.top()));
       symbol_stack.pop();
     }
+
     return suffix_expression;
   }
 
-  pair<CalculateStatus, double> Calculator(const string &infix_expression)
+  /*****************************************************************************
+   * @name Calculator
+   * @param infix_expression infix expression string
+   * @return a pair object contains calculation status and calculation result
+   * @brief calculate a infix expression and return calculation status and result
+   * @note internally, this function call \p IsInfixValid to check infix expression's
+   *       validity and call \p Infix2Suffix to convert infix to suffix, then use
+   *       the suffix expression to calculate result.
+   * @warning this function may modify the real parameter \p infix_expression
+   * **************************************************************************/
+  pair<CalculateStatus, double> Calculator(string &infix_expression)
   {
+    /* ↓ check if infix expression is empty ↓ */
+    if (infix_expression.empty())
+      return pair<CalculateStatus, double>(cInfixEmpty, -1);
+
+    /* ↓ check validity of infix expression ↓ */
+    if (IsInfixValid(infix_expression) == false)
+      return pair<CalculateStatus, double>(cInfixError, -1);
+
+    /* ↓ convert infix to suffix expression ↓ */
     vector<string> suffix_expression = Infix2Suffix(infix_expression);
+    if (suffix_expression.size() && suffix_expression.at(0) == "error")
+      return pair<CalculateStatus, double>(cInfixError, -1);
+
+    /* ↓ calculate suffix expression ↓ */
     stack<double> calculation_stack;
     for (const string &str : suffix_expression)
     {
+      /* ↓ check if str is an operand ↓ */
       if (isdigit(str.at(0)) || (str.at(1) == '-' && str.size() > 1))
+        // is an operand, push to calculation stack directly
         calculation_stack.push(stod(str));
       else
       {
+        // is an operator, get and pop first two operand of calculation stack top
         double rhs = calculation_stack.top();
         calculation_stack.pop();
         double lhs = calculation_stack.top();
         calculation_stack.pop();
+
+        // check operator type
         switch (str.at(0))
         {
         case '+':
           calculation_stack.push(lhs + rhs);
           break;
+
         case '-':
           calculation_stack.push(lhs - rhs);
           break;
+
         case '*':
           calculation_stack.push(lhs * rhs);
           break;
+
         case '/':
+          // check is there a divided by zero error occur
           if (rhs == 0)
           {
             cerr << "Error! The divisor cannot be zero!" << endl;
-            return pair<CalculateStatus, double>(cDevidedBy0, 0);
+            return pair<CalculateStatus, double>(cDevidedBy0, -1);
           }
           else
             calculation_stack.push(lhs / rhs);
@@ -276,9 +339,12 @@ namespace sheer_rey
         }
       }
     }
+
+    /* ↓ check the correctness of calculation result ↓ */
     if (calculation_stack.size() == 1)
       return pair<CalculateStatus, double>(cSuccess, calculation_stack.top());
     else
-      return pair<CalculateStatus, double>(cUnknownError, 0);
+      return pair<CalculateStatus, double>(cUnknownError, -1);
   }
+
 }
