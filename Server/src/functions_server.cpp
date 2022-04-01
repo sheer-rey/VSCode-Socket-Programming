@@ -22,10 +22,10 @@ namespace sheer_rey
    * @param infix infix expression string to be checked
    * @return true : input \p infix expression is valid
    * @return false: input \p infix expression is not valid
-   * @brief check if the infix expression is valid
-   * @note this function will remove spaces and replace brackets of input infix expression
-   * @note this function only used in current source file.
-   * @warning this function may modify the real parameter \p infix
+   * @brief Check if the infix expression is valid
+   * @note This function will remove spaces and replace brackets of input infix expression
+   * @note This function only used in current source file.
+   * @warning This function may modify the real parameter \p infix
    * **************************************************************************/
   bool IsInfixValid(string &infix)
   {
@@ -155,10 +155,10 @@ namespace sheer_rey
    * @name Infix2Suffix
    * @param infix_expression valid infix expression string without spaces and only have parentheses
    * @return a vector<string> object contains every operator and operand of suffix expression
-   * @brief translate infix expression to suffix expression for calculate
-   * @note if there's any error during runtime, the function will return a vector
+   * @brief Translate infix expression to suffix expression for calculate
+   * @note If there's any error during runtime, the function will return a vector
    *       with only one element string of "error"
-   * @note this function only used in current source file.
+   * @note This function only used in current source file.
    * **************************************************************************/
   vector<string> Infix2Suffix(const string &infix_expression)
   {
@@ -271,11 +271,11 @@ namespace sheer_rey
    * @name Calculator
    * @param infix_expression infix expression string
    * @return a pair object contains calculation status and calculation result
-   * @brief calculate a infix expression and return calculation status and result
-   * @note internally, this function call \p IsInfixValid to check infix expression's
+   * @brief Calculate a infix expression and return calculation status and result
+   * @note Internally, this function call \p IsInfixValid to check infix expression's
    *       validity and call \p Infix2Suffix to convert infix to suffix, then use
    *       the suffix expression to calculate result.
-   * @warning this function may modify the real parameter \p infix_expression
+   * @warning This function may modify the real parameter \p infix_expression
    * **************************************************************************/
   pair<CalculateStatus, double> Calculator(string &infix_expression)
   {
@@ -297,7 +297,7 @@ namespace sheer_rey
     for (const string &str : suffix_expression)
     {
       /* ↓ check if str is an operand ↓ */
-      if (isdigit(str.at(0)) || (str.at(1) == '-' && str.size() > 1))
+      if (isdigit(str.at(0)) || (str.size() > 1 && str.at(1) == '-'))
         // is an operand, push to calculation stack directly
         calculation_stack.push(stod(str));
       else

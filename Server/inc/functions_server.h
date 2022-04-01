@@ -15,7 +15,7 @@ namespace sheer_rey
   using std::vector;
 
   int EchoMessage(SOCKET server_socket);
-  pair<CalculateStatus, double> Calculator(const string &infix_expression);
+  pair<CalculateStatus, double> Calculator(string &infix_expression);
 }
 
 #endif

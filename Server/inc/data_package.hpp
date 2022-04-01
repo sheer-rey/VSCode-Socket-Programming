@@ -100,24 +100,26 @@ namespace sheer_rey
     cInfixError,
     cDevidedBy0,
     cUnknownError,
+    cUnCalculate,
   };
 
   struct PackageCalculator : public PackageHeader
   {
     /* ↓ data member ↓ */
     char infix_expression[cMaxBufferSize] = {};
-    CalculateStatus calculation_status;
-    bool is_result;
-    double result;
+    CalculateStatus calculation_status = cUnCalculate;
+    bool is_result = false;
+    double result = -1;
 
     /* ↓ function member ↓ */
 
     // constructor
     PackageCalculator() : PackageHeader(sizeof(PackageCalculator), CMD_Calculator) {}
 
-    PackageCalculator(const char *_infix, bool _is, double _result = -1)
+    PackageCalculator(const char *_infix, CalculateStatus _status = cUnCalculate,
+                      bool _is_result = false, double _result = -1)
         : PackageHeader(sizeof(PackageCalculator), CMD_Calculator),
-          is_result(_is), result(_result)
+          calculation_status(_status), is_result(_is_result), result(_result)
     {
       strcpy(infix_expression, _infix);
     }

@@ -15,11 +15,14 @@
 #include <winsock2.h>
 
 #include "data_package.hpp"
+#include "functions_server.h"
 
 int main()
 {
     using namespace sheer_rey;
     using std::cout, std::cin, std::cerr, std::endl;
+    using std::memset, std::strcpy;
+    using std::pair;
     using std::string;
 
     /* Winsock Initialization Begin */
@@ -90,7 +93,7 @@ int main()
         switch (package_header.command)
         {
         case CMD_Hello:
-
+        {
             /* ↓ echo message request ↓ */
             PackageHello message(package_header);
             receive_lenth = receive_status = 0;
@@ -109,10 +112,10 @@ int main()
 
             // echo received message
             send(handled_socket, (char *)&message, sizeof(message), 0);
-
             break;
-
+        }
         case CMD_Calculator:
+        {
             /* ↓ calculator request ↓ */
             PackageCalculator calculator(package_header);
             receive_lenth = receive_status = 0;
@@ -129,10 +132,26 @@ int main()
                     receive_lenth += receive_status;
             }
 
-            
-            cout << "CMD Calculator..." << endl;
-            break;
+            /* ↓ check received package ↓ */
+            if (calculator.calculation_status == cUnCalculate && calculator.is_result == false)
+            {
+                string infix(calculator.infix_expression);
+                pair<CalculateStatus, double> calculate_result = Calculator(infix);
 
+                // pack calculation result
+                memset(calculator.infix_expression, 0, cMaxBufferSize);
+                strcpy(calculator.infix_expression, infix.c_str());
+                calculator.is_result = true;
+                calculator.calculation_status = calculate_result.first;
+                calculator.result = calculate_result.second;
+
+                // send calculation result
+                send(handled_socket, (char *)&calculator, sizeof(calculator), 0);
+            }
+            else
+                cout << "Unidentified command." << endl;
+            break;
+        }
         default:
             cerr << "Unidentified command." << endl;
             break;

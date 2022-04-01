@@ -78,6 +78,7 @@ int main()
 
             case '2':
                 SendInfixExpression(client_socket);
+                ShowCalculationResult(client_socket);
                 break;
 
             case 'q':
