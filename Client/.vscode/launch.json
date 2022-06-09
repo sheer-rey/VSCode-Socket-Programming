@@ -1,60 +1,60 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        /* Debug task followed by comment */
-        {
-            "name": "Debug", // task name (user defined)
-            // specified the debug configuration as cppdbg (supported by cpptools)
-            "type": "cppdbg",
-            "request": "launch",
-            // program path to be debug (default as windows's location)
-            "program": "${workspaceFolder}/bin/${workspaceFolderBasename}.exe",
-            // Command line arguments passed to the program.
-            "args": [],
-            // specified the dubugger as gdb
-            "MIMode": "gdb",
-            // specified the debugger path (default as windows's location)
-            "miDebuggerPath": "C:/Program Files/mingw64/bin/gdb.exe",
-            "cwd": "${workspaceFolder}", // set the working directory of debug mode
-            // specified that program stop at main function entry
-            // after enter the debug mode
-            "stopAtEntry": true,
-            "environment": [],
-            "externalConsole": false,
-            "internalConsoleOptions": "neverOpen",
-            // specified that to execute this task must run 'build' task first
-            "preLaunchTask": "build",
-            // special setting for windows operating system
-            "windows": {
-                // program path to be debug (default as windows's location)
-                "program": "${workspaceFolder}/bin/${workspaceFolderBasename}.exe",
-                // Command line arguments passed to the program.
-                "args": [],
-                // specified the dubugger as gdb
-                "MIMode": "gdb",
-                // specified the debugger path (default as windows's location)
-                "miDebuggerPath": "C:/Program Files/mingw64/bin/gdb.exe",
-            },
-            // special setting for linux operating system
-            "linux": {
-                // program path to be debug (default as windows's location)
-                "program": "${workspaceFolder}/bin/${workspaceFolderBasename}",
-                // Command line arguments passed to the program.
-                "args": [],
-                // specified the dubugger as gdb
-                "MIMode": "gdb",
-                // specified the debugger path (default as windows's location)
-                "miDebuggerPath": "/usr/bin/gdb",
-                // add below to avoid debug ending's messy in WSL:
-                // [1] + Done            "/usr/bin/gdb" --interpreter=mi...
-                "miDebuggerArgs": "-q -ex quit; wait() { fg >/dev/null; }; /bin/gdb -q --interpreter=mi",
-                // add below to avoid debug ending's error notification:
-                // Unable to open 'libc-start.c': File not found.
-                // @btw: also need to get glibc-source and extract it (tar -xvf)
-                "sourceFileMap": {
-                    "/build/glibc-eX1tMB": "/usr/src/glibc",
-                }
-            }
+  "version": "0.2.0",
+  "configurations": [
+    /* Debug task followed by comment */
+    {
+      "name": "Debug", // task name (user defined)
+      // specified the debug configuration as cppdbg (supported by cpptools)
+      "type": "cppdbg",
+      "request": "launch",
+      // program path to be debug (default as windows's location)
+      "program": "${workspaceFolder}/bin/${workspaceFolderBasename}.exe",
+      // Command line arguments passed to the program.
+      "args": [],
+      // specified the dubugger as gdb
+      "MIMode": "gdb",
+      // specified the debugger path (default as windows's location)
+      "miDebuggerPath": "C:/Program Files/mingw64/bin/gdb.exe",
+      "cwd": "${workspaceFolder}", // set the working directory of debug mode
+      // specified that program stop at main function entry
+      // after enter the debug mode
+      "stopAtEntry": true,
+      "environment": [],
+      "externalConsole": false,
+      "internalConsoleOptions": "neverOpen",
+      // specified that to execute this task must run 'build' task first
+      "preLaunchTask": "build",
+      // special setting for windows operating system
+      "windows": {
+        // program path to be debug (default as windows's location)
+        "program": "${workspaceFolder}/bin/${workspaceFolderBasename}.exe",
+        // Command line arguments passed to the program.
+        "args": [],
+        // specified the dubugger as gdb
+        "MIMode": "gdb",
+        // specified the debugger path (default as windows's location)
+        "miDebuggerPath": "C:/Program Files/mingw64/bin/gdb.exe",
+      },
+      // special setting for linux operating system
+      "linux": {
+        // program path to be debug (default as windows's location)
+        "program": "${workspaceFolder}/bin/${workspaceFolderBasename}",
+        // Command line arguments passed to the program.
+        "args": [],
+        // specified the dubugger as gdb
+        "MIMode": "gdb",
+        // specified the debugger path (default as windows's location)
+        "miDebuggerPath": "/usr/bin/gdb",
+        // add below to avoid debug ending's messy in WSL:
+        // [1] + Done            "/usr/bin/gdb" --interpreter=mi...
+        "miDebuggerArgs": "-q -ex quit; wait() { fg >/dev/null; }; /bin/gdb -q --interpreter=mi",
+        // add below to avoid debug ending's error notification:
+        // Unable to open 'libc-start.c': File not found.
+        // @btw: also need to get glibc-source and extract it (tar -xvf)
+        "sourceFileMap": {
+          "/build/glibc-eX1tMB": "/usr/src/glibc",
         }
-    ]
+      }
+    }
+  ]
 }

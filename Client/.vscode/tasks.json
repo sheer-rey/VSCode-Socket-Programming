@@ -1,142 +1,146 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        /* Build task followed by comment */
-        {
-            "label": "build", // task name (user defined)
-            "type": "shell", // task type ("shell" or "process")
-            // special setting for windows operating system
-            "windows": {
-                // compile command
-                // for GCC to compile C++ codes, use g++. C use gcc)
-                "command": "g++",
-                // the arguments for the command above (refer in GCC manual)
-                "args": [
-                    // compile all .cpp files in subfolder 'src' of workspace
-                    {
-                        "value": "${workspaceFolder}/src/*.cpp",
-                        "quoting": "escape"
-                    },
-                    // '-I' specified the header files location
-                    "-I",
-                    // all header file are in folder 'inc' of workspace
-                    {
-                        // the below means escaping all space character of the path
-                        "value": "${workspaceFolder}/inc",
-                        "quoting": "escape"
-                    },
-                    // '-o' spacified the output name and path of executable file
-                    "-o",
-                    {
-                        // the below means escaping all space character of the path
-                        "value": "${workspaceFolder}/bin/${workspaceFolderBasename}.exe",
-                        "quoting": "escape"
-                    },
-                    // add global macro definition 'WIN32_LEAN_AND_MEAN'
-                    // to avoid the warning that put the 'winsock2.h' before 'windows.h'
-                    "-DWIN32_LEAN_AND_MEAN",
-                    "-O0", // '-O0' specified the compiler optimization level as level 0
-                    "-g", // '-g' specified that generate informations for debug
-                    "-Wall", // '-Wall' specified that turn on additional warnings
-                    "-static-libgcc", // specified that static link libgcc
-                    // specified that use the character set as GBK
-                    // to avoid output messy of program
-                    "-fexec-charset=GBK",
-                    "-std=c++17", // specified the C++ standard as C++17
-                    "-lws2_32"
-                ]
-            },
-            // special setting for linux operating system
-            "linux": {
-                // compile command
-                // for GCC to compile C++ codes, use g++. C use gcc)
-                "command": "g++",
-                // the arguments for the command above (refer in GCC manual)
-                "args": [
-                    // compile all .cpp files in subfolder 'src' of workspace
-                    {
-                        "value": "${workspaceFolder}/src/*.cpp",
-                        "quoting": "escape"
-                    },
-                    // '-I' specified the header files location
-                    "-I",
-                    // all header file are in folder 'inc' of workspace
-                    {
-                        // the below means escaping all space character of the path
-                        "value": "${workspaceFolder}/inc",
-                        "quoting": "escape"
-                    },
-                    // '-o' spacified the output name and path of executable file
-                    "-o",
-                    {
-                        // the below means escaping all space character of the path
-                        "value": "${workspaceFolder}/bin/${workspaceFolderBasename}",
-                        "quoting": "escape"
-                    },
-                    "-O0", // '-O0' specified the compiler optimization level as level 0
-                    "-g", // '-g' specified that generate informations for debug
-                    "-Wall", // '-Wall' specified that turn on additional warnings
-                    "-static-libgcc", // specified that static link libgcc
-                    // specified that use the character set as GBK
-                    // to avoid output messy of program
-                    "-fexec-charset=GBK",
-                    "-std=c++17", // specified the C++ standard as C++17
-                ]
-            },
-            // catch problems in compile progress, and put them in 'problem' pannel
-            "problemMatcher": "$gcc",
-            // set execution group this task belongs to
-            "group": {
-                // 'build' task set to 'build' group (user defined)
-                // we can binding shortcut keys to the 'build' group
-                // to execute this task conveniently
-                "kind": "build",
-                "isDefault": true
-            },
-            "presentation": {
-                "echo": true,
-                // specified that terminal always revealed while executed the task
-                "reveal": "always",
-                "focus": true,
-                "panel": "shared"
-            }
-        },
-        /* Run task followed by comment */
-        {
-            "label": "run", // task name (user defined)
-            "type": "shell", // task type ("shell" or "process")
-            // specified that to execute this task must run 'build' task first
-            "dependsOn": "build",
-            // special setting for windows operating system
-            "windows": {
-                "command": {
-                    // the below means escaping all space character of the path
-                    "value": "${workspaceFolder}/bin/${workspaceFolderBasename}.exe",
-                    "quoting": "escape"
-                }
-            },
-            // special setting for linux operating system
-            "linux": {
-                "command": {
-                    // the below means escaping all space character of the path
-                    "value": "${workspaceFolder}/bin/${workspaceFolderBasename}",
-                    "quoting": "escape"
-                }
-            },
-            "group": {
-                // 'run' task set to 'test' group (user defined)
-                // we can binding shortcut keys to the 'test' group
-                // to execute this task conveniently
-                "kind": "test",
-                "isDefault": true
-            },
-            "presentation": {
-                "echo": true,
-                // specified that terminal always revealed while executed the task
-                "reveal": "always",
-                "focus": true,
-                "panel": "shared"
-            }
+  "version": "2.0.0",
+  "tasks": [
+    /* Build task followed by comment */
+    {
+      "label": "build", // task name (user defined)
+      "type": "shell", // task type ("shell" or "process")
+      // special setting for windows operating system
+      "windows": {
+        // compile command
+        // for GCC to compile C++ codes, use g++. C use gcc)
+        "command": "g++",
+        // the arguments for the command above (refer in GCC manual)
+        "args": [
+          // compile all .cpp files in subfolder 'src' of workspace
+          {
+            "value": "${workspaceFolder}/src/*.cpp",
+            "quoting": "escape"
+          },
+          // '-I' specified the header files location
+          "-I",
+          // all header file are in folder 'inc' of workspace
+          {
+            // the below means escaping all space character of the path
+            "value": "${workspaceFolder}/inc",
+            "quoting": "escape"
+          },
+          // '-o' spacified the output name and path of executable file
+          "-o",
+          {
+            // the below means escaping all space character of the path
+            "value": "${workspaceFolder}/bin/${workspaceFolderBasename}.exe",
+            "quoting": "escape"
+          },
+          // add global macro definition 'WIN32_LEAN_AND_MEAN'
+          // global definition to avoid the warning that put the 'winsock2.h' before 'windows.h'
+          "-DWIN32_LEAN_AND_MEAN",
+          // global definition for Windows platform
+          "-DPROGRAMMING_ON_WINDOWS",
+          "-O0", // '-O0' specified the compiler optimization level as level 0
+          "-g", // '-g' specified that generate informations for debug
+          "-Wall", // '-Wall' specified that turn on additional warnings
+          "-static-libgcc", // specified that static link libgcc
+          // specified that use the character set as GBK
+          // to avoid output messy of program
+          "-fexec-charset=GBK",
+          "-std=c++17", // specified the C++ standard as C++17
+          "-lws2_32"
+        ]
+      },
+      // special setting for linux operating system
+      "linux": {
+        // compile command
+        // for GCC to compile C++ codes, use g++. C use gcc)
+        "command": "g++",
+        // the arguments for the command above (refer in GCC manual)
+        "args": [
+          // compile all .cpp files in subfolder 'src' of workspace
+          {
+            "value": "${workspaceFolder}/src/*.cpp",
+            "quoting": "escape"
+          },
+          // '-I' specified the header files location
+          "-I",
+          // all header file are in folder 'inc' of workspace
+          {
+            // the below means escaping all space character of the path
+            "value": "${workspaceFolder}/inc",
+            "quoting": "escape"
+          },
+          // '-o' spacified the output name and path of executable file
+          "-o",
+          {
+            // the below means escaping all space character of the path
+            "value": "${workspaceFolder}/bin/${workspaceFolderBasename}",
+            "quoting": "escape"
+          },
+          // global definition for Linux platform
+          "-DPROGRAMMING_ON_LINUX",
+          "-O0", // '-O0' specified the compiler optimization level as level 0
+          "-g", // '-g' specified that generate informations for debug
+          "-Wall", // '-Wall' specified that turn on additional warnings
+          "-static-libgcc", // specified that static link libgcc
+          // specified that use the character set as GBK
+          // to avoid output messy of program
+          "-fexec-charset=GBK",
+          "-std=c++17", // specified the C++ standard as C++17
+        ]
+      },
+      // catch problems in compile progress, and put them in 'problem' pannel
+      "problemMatcher": "$gcc",
+      // set execution group this task belongs to
+      "group": {
+        // 'build' task set to 'build' group (user defined)
+        // we can binding shortcut keys to the 'build' group
+        // to execute this task conveniently
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        // specified that terminal always revealed while executed the task
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      }
+    },
+    /* Run task followed by comment */
+    {
+      "label": "run", // task name (user defined)
+      "type": "shell", // task type ("shell" or "process")
+      // specified that to execute this task must run 'build' task first
+      "dependsOn": "build",
+      // special setting for windows operating system
+      "windows": {
+        "command": {
+          // the below means escaping all space character of the path
+          "value": "${workspaceFolder}/bin/${workspaceFolderBasename}.exe",
+          "quoting": "escape"
         }
-    ]
+      },
+      // special setting for linux operating system
+      "linux": {
+        "command": {
+          // the below means escaping all space character of the path
+          "value": "${workspaceFolder}/bin/${workspaceFolderBasename}",
+          "quoting": "escape"
+        }
+      },
+      "group": {
+        // 'run' task set to 'test' group (user defined)
+        // we can binding shortcut keys to the 'test' group
+        // to execute this task conveniently
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        // specified that terminal always revealed while executed the task
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      }
+    }
+  ]
 }

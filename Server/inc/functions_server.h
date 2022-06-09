@@ -1,21 +1,21 @@
 #ifndef _FUNCTIONS_SERVER_
 #define _FUNCTIONS_SERVER_
+#include "global_definition.h"
 
 #include <string>
 #include <utility>
 #include <vector>
-#include <winsock2.h>
-
 #include "data_package.hpp"
 
 namespace sheer_rey
 {
-  using std::pair;
-  using std::string;
-  using std::vector;
+	using std::pair;
+	using std::string;
+	using std::vector;
 
-  int EchoMessage(SOCKET server_socket);
-  pair<CalculateStatus, double> Calculator(string &infix_expression);
+	int GetPackageHeader(SOCKET &_handled_socket, PackageHeader &_package_header);
+	int EchoMessageServer(SOCKET &_handled_socket, PackageHeader &_package_header);
+	int CalculatorServer(SOCKET &_handled_socket, PackageHeader &_package_header);
 }
 
 #endif

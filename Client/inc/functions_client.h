@@ -1,18 +1,16 @@
 #ifndef _FUNCTIONS_CLIENT_
 #define _FUNCTIONS_CLIENT_
+#include "global_definition.h"
 
-#include <iostream>
 #include <cstring>
-#include <winsock2.h>
+#include <iostream>
 #include <utility>
 
 #include "data_package.hpp"
 
-namespace sheer_rey
-{
-  int EchoMessage(SOCKET &client_socket);
-  int SendInfixExpression(SOCKET &client_socket);
-  int ShowCalculationResult(SOCKET &client_socket);
-}
+namespace sheer_rey {
+  int EchoMessageClient(SOCKET& _client_socket);
+  int CalculatorClient(SOCKET& _client_socket);
+}  // namespace sheer_rey
 
 #endif
