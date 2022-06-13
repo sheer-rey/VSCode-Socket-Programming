@@ -26,7 +26,9 @@ typedef int socklen_t;
  * ****************************************************************************/
 #ifdef PROGRAMMING_ON_LINUX
 #include <arpa/inet.h>
+#include <signal.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define closesocket close
@@ -34,5 +36,11 @@ typedef int socklen_t;
 #define INVALID_SOCKET -1
 typedef int SOCKET;
 #endif
+
+/*******************************************************************************
+ * @note Programming Under Both Windows and Linux Operating System
+ * ****************************************************************************/
+#define IP_ADDR_SERVER inet_addr("192.168.81.43")
+#define IP_ADDR_PORT_SERVER 1314
 
 #endif

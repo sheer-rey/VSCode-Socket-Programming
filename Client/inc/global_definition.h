@@ -35,4 +35,10 @@ typedef int socklen_t;
 typedef int SOCKET;
 #endif
 
+/*******************************************************************************
+ * @note Programming Under Both Windows and Linux Operating System
+ * ****************************************************************************/
+#define IP_ADDR_SERVER inet_addr("192.168.95.96")
+#define IP_ADDR_PORT_SERVER 1314
+
 #endif

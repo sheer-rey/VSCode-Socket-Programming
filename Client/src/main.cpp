@@ -24,43 +24,47 @@ int main() {
 
   /* Winsock Initialization Begin */
 #ifdef PROGRAMMING_ON_WINDOWS
+  cout << "Winsock api initialization..." << endl;
   WSAData wsa_data;
-  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
-    cerr << "WSAStartup() error!" << endl;
+  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
+    cerr << "Winsock api initialization failed..." << endl;
+    exit(EXIT_FAILURE);
+  }
 #endif
   /* Winsock Initialization End */
 
   /* Main Body Begin */
 
   /* ↓ create client socket ↓ */
+  cout << "Client socket initialization..." << endl;
   SOCKET client_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if (client_socket == INVALID_SOCKET)
-    cerr << "Server socket initialization fail..." << endl;
-  else
-    cout << "Server socket initialization successful..." << endl;
+  if (client_socket == INVALID_SOCKET) {
+    cerr << "Client socket initialization failed..." << endl;
+    exit(EXIT_FAILURE);
+  }
 
   /* ↓ set client socket's address and connect to server ↓ */
   sockaddr_in server_addr{};
 
 #ifdef PROGRAMMING_ON_WINDOWS
-  server_addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+  server_addr.sin_addr.S_un.S_addr = IP_ADDR_SERVER;
 #endif
 
 #ifdef PROGRAMMING_ON_LINUX
-  server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  server_addr.sin_addr.s_addr = IP_ADDR_SERVER;
 #endif
 
   server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(1314);
+  server_addr.sin_port = htons(IP_ADDR_PORT_SERVER);
 
   // connect to server
+  cout << "Connect to server..." << endl;
   if (connect(client_socket, (sockaddr*)&server_addr, sizeof(server_addr)) ==
       SOCKET_ERROR) {
     cerr << "Connect to server fail..." << endl;
     closesocket(client_socket);
     exit(EXIT_FAILURE);
-  } else
-    cout << "Connect to server successful..." << endl;
+  }
 
   /* ↓ exchange data with server and user ↓ */
   cout << "\nWhat you want to do? (enter the number, q to quit): " << endl;

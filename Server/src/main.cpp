@@ -23,23 +23,41 @@ int main() {
   using std::pair;
   using std::string;
 
+  /* Signal Handler Initialization Begin */
+#ifdef PROGRAMMING_ON_LINUX
+  // register signal handler for SIGCHLD to destroy zombie process
+  // the signal handler for SIGCHLD is default
+  cout << "Signal handler initialization..." << endl;
+  struct sigaction signal_action {};
+  signal_action.sa_flags = 0;
+  signal_action.sa_handler = SIGCHLD_handler;
+  if (sigaction(SIGCHLD, &signal_action, nullptr) == -1) {
+    cerr << "Signal handler initialization failed..." << endl;
+    return -1;
+  }
+#endif
+  /* Signal Handler Initialization End */
+
   /* Winsock for Windows Initialization Begin */
 #ifdef PROGRAMMING_ON_WINDOWS
+  cout << "Winsock API Initialization..." << endl;
   WSAData wsa_data;
-  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
+  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
     cerr << "WSAStartup() error!" << endl;
+    exit(EXIT_FAILURE);
+  }
 #endif
   /* Winsock for Windows Initialization End */
 
   /* Main Body Begin */
 
   /* ↓ create server socket ↓ */
+  cout << "Server socket initialization..." << endl;
   SOCKET server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (server_socket == INVALID_SOCKET) {
-    cerr << "Server socket initialization fail..." << endl;
+    cerr << "Server socket initialization failed..." << endl;
     exit(EXIT_FAILURE);
-  } else
-    cout << "Server socket initialization successful..." << endl;
+  }
 
   /* ↓ set server socket's address and bind ↓ */
   sockaddr_in server_addr{};
@@ -53,23 +71,22 @@ int main() {
 #endif
 
   server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(1314);
+  server_addr.sin_port = htons(IP_ADDR_PORT_SERVER);
+  cout << "Bind port..." << endl;
   if (bind(server_socket, (sockaddr*)&server_addr, sizeof(server_addr)) ==
       SOCKET_ERROR) {
-    cerr << "Bind port fail..." << endl;
+    cerr << "Bind port failed..." << endl;
     closesocket(server_socket);
     exit(EXIT_FAILURE);
-  } else {
-    cout << "Bind port successful..." << endl;
   }
 
   /* ↓ listen to binded port ↓ */
+  cout << "Listen to port..." << endl;
   if (listen(server_socket, SOMAXCONN) == SOCKET_ERROR) {
-    cerr << "Listen to port fail..." << endl;
+    cerr << "Listen to port failed..." << endl;
     closesocket(server_socket);
     exit(EXIT_FAILURE);
-  } else
-    cout << "Listen to port successful..." << endl;
+  }
 
   /* ↓ create socket for handling current request ↓ */
   SOCKET handled_socket = INVALID_SOCKET;
@@ -80,39 +97,51 @@ int main() {
     /* ↓ accept client request ↓ */
     handled_socket =
         accept(server_socket, (sockaddr*)&client_addr, &client_addr_lenth);
-    if (handled_socket == INVALID_SOCKET) {
-      cerr << "accept client socket error..." << endl;
-      closesocket(server_socket);
-      exit(EXIT_FAILURE);
-    } else
-      cout << "accept client socket success..." << endl;
+    if (handled_socket == INVALID_SOCKET) { continue; }
 
+    cout << "accept client socket success..." << endl;
     cout << "Client Addr: " << inet_ntoa(client_addr.sin_addr) << ':'
          << ntohs(client_addr.sin_port) << endl;
 
-    while (true) {
-      /* ↓ exchange data with client ↓ */
-      PackageHeader package_header;
-      if (GetPackageHeader(handled_socket, package_header) == -1) break;
+#ifdef PROGRAMMING_ON_LINUX
+    pid_t pid = fork();  // fork a child process
 
-      // check request type
-      switch (package_header.command) {
-        case CMD_Hello: {
-          /* ↓ echo message request ↓ */
-          EchoMessageServer(handled_socket, package_header);
-          break;
+    if (pid == 0) {
+      /* child process domain */
+      closesocket(server_socket);
+#endif
+      while (true) {
+        /* ↓ exchange data with client ↓ */
+        PackageHeader package_header;
+        if (GetPackageHeader(handled_socket, package_header) == -2) break;
+
+        // check request type
+        switch (package_header.command) {
+          case CMD_Hello: {
+            /* ↓ echo message request ↓ */
+            EchoMessageServer(handled_socket, package_header);
+            break;
+          }
+          case CMD_Calculator: {
+            /* ↓ calculator request ↓ */
+            CalculatorServer(handled_socket, package_header);
+            break;
+          }
+          default: cerr << "Unidentified command." << endl; break;
         }
-        case CMD_Calculator: {
-          /* ↓ calculator request ↓ */
-          CalculatorServer(handled_socket, package_header);
-          break;
-        }
-        default: cerr << "Unidentified command." << endl; break;
       }
+
+      cout << "Client " << inet_ntoa(client_addr.sin_addr) << ':'
+           << ntohs(client_addr.sin_port) << " disconnect..." << endl;
+      closesocket(handled_socket);
+
+#ifdef PROGRAMMING_ON_LINUX
+      return 0;
+    } else {
+      /* parents process domain */
+      closesocket(handled_socket);
     }
-    cout << "Client " << inet_ntoa(client_addr.sin_addr) << ':'
-         << ntohs(client_addr.sin_port) << " disconnect..." << endl;
-    closesocket(handled_socket);
+#endif
   }
 
 /* ↓ close server socket ↓ */
@@ -122,9 +151,9 @@ int main() {
 #ifdef PROGRAMMING_ON_LINUX
   close(server_socket);
 #endif
-  /* Main Body End */
+/* Main Body End */
 
-  /* Winsock Cleanup Begin */
+/* Winsock Cleanup Begin */
 #ifdef PROGRAMMING_ON_WINDOWS
   WSACleanup();
 /* Winsock Cleanup End */

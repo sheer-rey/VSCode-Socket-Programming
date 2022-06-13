@@ -32,11 +32,9 @@ namespace sheer_rey {
     /* ↓ remove spaces in _infix ↓ */
     int slow = 0, fast = slow;
     while (fast < int(_infix.size())) {
-      if (_infix[fast] == ' ')
-        fast++;
+      if (_infix[fast] == ' ') fast++;
       else {
-        if (slow < fast)
-          _infix[slow++] = _infix[fast++];
+        if (slow < fast) _infix[slow++] = _infix[fast++];
         else {
           slow++;
           fast++;
@@ -46,20 +44,14 @@ namespace sheer_rey {
     _infix.resize(slow);
 
     /* ↓ replace '[]' and '{}' with '()' ↓ */
-    for (char& c : _infix)
-      switch (c) {
+    for (char& c : _infix) switch (c) {
         case '[':
-        case '{':
-          c = '(';
-          break;
+        case '{': c = '('; break;
 
         case ']':
-        case '}':
-          c = ')';
-          break;
+        case '}': c = ')'; break;
 
-        default:
-          break;
+        default: break;
       }
 
     /* ↓ check infix program validity ↓ */
@@ -71,10 +63,8 @@ namespace sheer_rey {
       return false;
     stack<char> symbol_stack;
     for (int i = 0; i < int(_infix.size()); i++) {
-      if (isdigit(_infix.at(i)))
-        continue;
-      else
-        switch (_infix.at(i)) {
+      if (isdigit(_infix.at(i))) continue;
+      else switch (_infix.at(i)) {
           case '.':
             // there must be digit at both sides of decimal point
             if (!isdigit(_infix.at(i - 1)) || !isdigit(_infix.at(i + 1)))
@@ -100,8 +90,7 @@ namespace sheer_rey {
             if (symbol_stack.empty())
               // it means the number of brackets don't match
               return false;
-            else
-              symbol_stack.pop();  // used to match brackets
+            else symbol_stack.pop();  // used to match brackets
             // the left side of innermost right bracket must be digit
             if (_infix.at(i - 1) != ')')  // it means ')' at innermost
               if (!isdigit(_infix.at(i - 1))) return false;
@@ -135,10 +124,8 @@ namespace sheer_rey {
     }
 
     // check if the number of left and right brackets match
-    if (symbol_stack.empty())
-      return true;
-    else
-      return false;
+    if (symbol_stack.empty()) return true;
+    else return false;
   }
 
   /*****************************************************************************
@@ -157,8 +144,7 @@ namespace sheer_rey {
     vector<string> suffix_expression;
     size_t i, j;
     for (i = 0, j = 0; i < _infix_expression.size(); i++) {
-      if (isdigit(_infix_expression[i]))
-        continue;
+      if (isdigit(_infix_expression[i])) continue;
       else {
         // i-j > 0, that means there's digits before _infix_expression[i]
         if (i - j)
@@ -167,8 +153,7 @@ namespace sheer_rey {
 
         // if symbol stack is empty, that means there's no need to compare
         // operator's priority
-        if (symbol_stack.empty())
-          symbol_stack.push(_infix_expression[i]);
+        if (symbol_stack.empty()) symbol_stack.push(_infix_expression[i]);
         else {
           // symbol stack is not empty, need to compare operator's priority
           char stack_top = symbol_stack.top();
@@ -182,10 +167,8 @@ namespace sheer_rey {
               while (stack_top == '*' || stack_top == '/') {
                 suffix_expression.push_back(string(1, stack_top));
                 symbol_stack.pop();
-                if (!symbol_stack.empty())
-                  stack_top = symbol_stack.top();
-                else
-                  break;
+                if (!symbol_stack.empty()) stack_top = symbol_stack.top();
+                else break;
               }
               symbol_stack.push(_infix_expression[i]);
               break;
@@ -200,10 +183,8 @@ namespace sheer_rey {
               while (stack_top != '(') {
                 suffix_expression.push_back(string(1, stack_top));
                 symbol_stack.pop();
-                if (!symbol_stack.empty())
-                  stack_top = symbol_stack.top();
-                else
-                  break;
+                if (!symbol_stack.empty()) stack_top = symbol_stack.top();
+                else break;
               }
               symbol_stack.push(_infix_expression[i]);
               break;
@@ -221,10 +202,8 @@ namespace sheer_rey {
               while (stack_top != '(') {
                 suffix_expression.push_back(string(1, stack_top));
                 symbol_stack.pop();
-                if (!symbol_stack.empty())
-                  stack_top = symbol_stack.top();
-                else
-                  break;
+                if (!symbol_stack.empty()) stack_top = symbol_stack.top();
+                else break;
               }
               symbol_stack.pop();
               break;
@@ -295,29 +274,21 @@ namespace sheer_rey {
 
         // check operator type
         switch (str.at(0)) {
-          case '+':
-            calculation_stack.push(lhs + rhs);
-            break;
+          case '+': calculation_stack.push(lhs + rhs); break;
 
-          case '-':
-            calculation_stack.push(lhs - rhs);
-            break;
+          case '-': calculation_stack.push(lhs - rhs); break;
 
-          case '*':
-            calculation_stack.push(lhs * rhs);
-            break;
+          case '*': calculation_stack.push(lhs * rhs); break;
 
           case '/':
             // check is there a divided by zero error occur
             if (rhs == 0) {
               cerr << "Error! The divisor cannot be zero!" << endl;
               return pair<CalculateStatus, double>(cDevidedBy0, -1);
-            } else
-              calculation_stack.push(lhs / rhs);
+            } else calculation_stack.push(lhs / rhs);
             break;
 
-          default:
-            break;
+          default: break;
         }
       }
     }
@@ -325,8 +296,7 @@ namespace sheer_rey {
     /* ↓ check the correctness of calculation result ↓ */
     if (calculation_stack.size() == 1)
       return pair<CalculateStatus, double>(cSuccess, calculation_stack.top());
-    else
-      return pair<CalculateStatus, double>(cUnknownError, -1);
+    else return pair<CalculateStatus, double>(cUnknownError, -1);
   }
 
   //==========================================================================//
@@ -337,6 +307,7 @@ namespace sheer_rey {
    * @param _package_header data package header to be fill
    * @retval  0 : get package header successful
    * @retval -1 : receive data error
+   * @retval -2 : peer client has performed an orderly shutdown
    * @brief Receive data from client and fill package header struct
    * **************************************************************************/
   int GetPackageHeader(SOCKET& _handled_socket,
@@ -349,11 +320,14 @@ namespace sheer_rey {
       receive_status =
           recv(_handled_socket, (char*)&_package_header + receive_lenth,
                int(sizeof(_package_header)) - receive_lenth, 0);
-      if (receive_status <= 0 && receive_lenth == 0) {
+      if (receive_status < 0) {
         cerr << "Receive data error!" << endl;
         return -1;
-      } else
+      } else if (receive_status == 0 && receive_lenth == 0) {
+        return -2;
+      } else {
         receive_lenth += receive_status;
+      }
     }
 
     return 0;
@@ -383,8 +357,7 @@ namespace sheer_rey {
       if (receive_status == SOCKET_ERROR) {
         cerr << "Receive data error!" << endl;
         return -1;
-      } else
-        receive_lenth += receive_status;
+      } else receive_lenth += receive_status;
     }
 
     // echo received message
@@ -416,8 +389,7 @@ namespace sheer_rey {
       if (receive_status == SOCKET_ERROR) {
         cerr << "Receive data error!" << endl;
         return -1;
-      } else
-        receive_lenth += receive_status;
+      } else receive_lenth += receive_status;
     }
 
     /* ↓ check received package ↓ */
@@ -441,4 +413,15 @@ namespace sheer_rey {
       return -1;
     }
   }
+
+  /*****************************************************************************
+   * @name SIGCHLD_handler
+   * @brief Signal handler for SIGCHLD in Linux
+   * @note Use wait or waitpid function to destroy zombie process
+   * **************************************************************************/
+  void SIGCHLD_handler(int) {
+    int status;
+    waitpid(-1, &status, WNOHANG);
+  }
+
 }  // namespace sheer_rey
