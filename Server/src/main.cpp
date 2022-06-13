@@ -25,21 +25,24 @@ int main() {
 
   /* Winsock for Windows Initialization Begin */
 #ifdef PROGRAMMING_ON_WINDOWS
+  cout << "Winsock api initialization..." << endl;
   WSAData wsa_data;
-  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
-    cerr << "WSAStartup() error!" << endl;
+  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
+    cerr << "Winsock api initialization failed..." << endl;
+    exit(EXIT_FAILURE);
+  }
 #endif
   /* Winsock for Windows Initialization End */
 
   /* Main Body Begin */
 
   /* ↓ create server socket ↓ */
+  cout << "Server socket initialization..." << endl;
   SOCKET server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (server_socket == INVALID_SOCKET) {
-    cerr << "Server socket initialization fail..." << endl;
+    cerr << "Server socket initialization failed..." << endl;
     exit(EXIT_FAILURE);
-  } else
-    cout << "Server socket initialization successful..." << endl;
+  }
 
   /* ↓ set server socket's address and bind ↓ */
   sockaddr_in server_addr{};
@@ -53,23 +56,23 @@ int main() {
 #endif
 
   server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(1314);
+  server_addr.sin_port = htons(IP_ADDR_PORT_SERVER);
+
+  cout << "Bind port..." << endl;
   if (bind(server_socket, (sockaddr*)&server_addr, sizeof(server_addr)) ==
       SOCKET_ERROR) {
-    cerr << "Bind port fail..." << endl;
+    cerr << "Bind port failed..." << endl;
     closesocket(server_socket);
     exit(EXIT_FAILURE);
-  } else {
-    cout << "Bind port successful..." << endl;
   }
 
   /* ↓ listen to binded port ↓ */
+  cout << "Listen to port..." << endl;
   if (listen(server_socket, SOMAXCONN) == SOCKET_ERROR) {
-    cerr << "Listen to port fail..." << endl;
+    cerr << "Listen to port failed..." << endl;
     closesocket(server_socket);
     exit(EXIT_FAILURE);
-  } else
-    cout << "Listen to port successful..." << endl;
+  }
 
   /* ↓ create socket for handling current request ↓ */
   SOCKET handled_socket = INVALID_SOCKET;
@@ -78,14 +81,14 @@ int main() {
 
   while (true) {
     /* ↓ accept client request ↓ */
+    cout << "Accept client socket..." << endl;
     handled_socket =
         accept(server_socket, (sockaddr*)&client_addr, &client_addr_lenth);
     if (handled_socket == INVALID_SOCKET) {
-      cerr << "accept client socket error..." << endl;
+      cerr << "Accept client socket error..." << endl;
       closesocket(server_socket);
       exit(EXIT_FAILURE);
-    } else
-      cout << "accept client socket success..." << endl;
+    }
 
     cout << "Client Addr: " << inet_ntoa(client_addr.sin_addr) << ':'
          << ntohs(client_addr.sin_port) << endl;
@@ -93,7 +96,7 @@ int main() {
     while (true) {
       /* ↓ exchange data with client ↓ */
       PackageHeader package_header;
-      if (GetPackageHeader(handled_socket, package_header) == -1) break;
+      if (GetPackageHeader(handled_socket, package_header) == -2) break;
 
       // check request type
       switch (package_header.command) {

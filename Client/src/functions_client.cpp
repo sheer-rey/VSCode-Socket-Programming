@@ -33,10 +33,8 @@ namespace sheer_rey {
              << cMaxBufferSize - 1
              << " characters max, press enter to send, q to quit): ";
       // check for quit
-      else if (str.size() == 1 && str[0] == 'q')
-        return "";
-      else
-        break;
+      else if (str.size() == 1 && str[0] == 'q') return "";
+      else break;
       getline(cin, str);
     }
     return str;
@@ -44,7 +42,7 @@ namespace sheer_rey {
 
   /*****************************************************************************
    * @name SendInfixExpression
-   * @param _client_socket client's windows socket handle
+   * @param _client_socket client's socket
    * @param _infix_expression infix expression string (input)
    * @retval -1: send error
    * @retval 0 : send success
@@ -67,7 +65,7 @@ namespace sheer_rey {
 
   /*****************************************************************************
    * @name GetCalculationResult
-   * @param _client_socket client's windows socket handle
+   * @param _client_socket client's socket
    * @retval -1: get result from server error
    * @retval 0 : get result from server success
    * @brief Get calculation result from server after send infix successful and
@@ -86,8 +84,7 @@ namespace sheer_rey {
       if (receive_status == SOCKET_ERROR) {
         cerr << "Receive data error!" << endl;
         return -1;
-      } else
-        receive_lenth += receive_status;
+      } else receive_lenth += receive_status;
     }
 
     PackageCalculator calculator(package_header);
@@ -104,8 +101,7 @@ namespace sheer_rey {
         if (receive_status == SOCKET_ERROR) {
           cerr << "Receive data error!" << endl;
           return -1;
-        } else
-          receive_lenth += receive_status;
+        } else receive_lenth += receive_status;
       }
 
       /* ↓ check received package ↓ */
@@ -117,8 +113,7 @@ namespace sheer_rey {
             cout << calculator.infix_expression << '=' << calculator.result
                  << endl;
             return 0;
-          } else
-            cerr << "Error! Unknown error." << endl;
+          } else cerr << "Error! Unknown error." << endl;
           break;
 
         case cInfixEmpty:
@@ -152,7 +147,7 @@ namespace sheer_rey {
 
   /*****************************************************************************
    * @name EchoMessageClient
-   * @param _client_socket client's windows socket handle
+   * @param _client_socket client's socket
    * @retval -1: echo error
    * @retval 0 : echo success
    * @brief Send message to server and get the echo
@@ -179,8 +174,7 @@ namespace sheer_rey {
               "trimmed."
            << endl;
       strcpy(message.message, str.substr(0, 127).c_str());
-    } else
-      strcpy(message.message, str.c_str());
+    } else strcpy(message.message, str.c_str());
 
     if (send(_client_socket, (char*)&message, sizeof(message), 0) ==
         SOCKET_ERROR) {
@@ -202,8 +196,7 @@ namespace sheer_rey {
         if (receive_status == SOCKET_ERROR) {
           cerr << "Receive data error!" << endl;
           return -1;
-        } else
-          receive_lenth += receive_status;
+        } else receive_lenth += receive_status;
       }
 
       // check package type received from server
@@ -219,8 +212,7 @@ namespace sheer_rey {
           if (receive_status == SOCKET_ERROR) {
             cerr << "Receive data error!" << endl;
             return -1;
-          } else
-            receive_lenth += receive_status;
+          } else receive_lenth += receive_status;
         }
         cout << "Receive from server successful!" << endl;
         cout << "Received data: " << message.message << endl;
@@ -234,7 +226,7 @@ namespace sheer_rey {
 
   /*****************************************************************************
    * @name CalculatorClient
-   * @param _client_socket client's windows socket handle
+   * @param _client_socket client's socket
    * @retval -1: send error
    * @retval 0 : send success
    * @brief Send infix expression to server for calculate without validity
