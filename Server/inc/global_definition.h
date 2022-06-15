@@ -27,6 +27,7 @@ typedef int socklen_t;
 #ifdef PROGRAMMING_ON_LINUX
 #include <arpa/inet.h>
 #include <signal.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>

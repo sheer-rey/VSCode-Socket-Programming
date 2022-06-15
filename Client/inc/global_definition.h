@@ -40,7 +40,7 @@ typedef int SOCKET;
 /*******************************************************************************
  * @note Programming Under Both Windows and Linux Operating System
  * ****************************************************************************/
-#define IP_ADDR_SERVER inet_addr("192.168.81.43")
+#define IP_ADDR_SERVER inet_addr("192.168.93.124")
 #define IP_ADDR_PORT_SERVER 1314
 
 #endif

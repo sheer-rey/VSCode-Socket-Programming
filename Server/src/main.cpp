@@ -13,14 +13,18 @@
 
 #include <cstring>
 #include <iostream>
+#include <list>
+#include <utility>
+
 #include "data_package.hpp"
 #include "functions_server.h"
 
 int main() {
   using namespace sheer_rey;
   using std::cout, std::cin, std::cerr, std::endl;
+  using std::list;
   using std::memset, std::strcpy;
-  using std::pair;
+  using std::pair, std::make_pair;
   using std::string;
 
   /* Winsock for Windows Initialization Begin */
@@ -79,43 +83,122 @@ int main() {
   sockaddr_in client_addr;
   socklen_t client_addr_lenth = sizeof(client_addr);
 
+  /* Select Function Initialization Begin */
+  fd_set read_fds_backup = {};
+  timeval timeout_backup = {0, 0};
+  FD_ZERO(&read_fds_backup);
+  FD_SET(server_socket, &read_fds_backup);
+  // ↓ recordig opened sockets by using list, forward_list or set.
+  // ↓ do not use vector or unordered_set because its iterator may be invalid
+  // ↓ while insert, remove elements or force rehash.
+  // ↓ using pair to store both socket and associated socket address
+  list<pair<SOCKET, sockaddr_in>> sockets = {
+      make_pair(server_socket, server_addr)};
+  // ↓ recording sockets to be remove from sockets list, and remove them
+  // ↓ together after the traverse of sockets list.
+  // ↓ do not remove sockets during the list traversal, otherwise, the invalid
+  // ↓ iterator of removed element will interrupt the list traversal and throw
+  // ↓ an exception
+  vector<SOCKET> sockets_to_be_remove;
+  // ↓ only valid in Linux, to specify the max file descriptors in select poll
+  int poll_fds_max = server_socket + 1;
+  /* Select Function Initialization End */
+
   while (true) {
-    /* ↓ accept client request ↓ */
-    cout << "Accept client socket..." << endl;
-    handled_socket =
-        accept(server_socket, (sockaddr*)&client_addr, &client_addr_lenth);
-    if (handled_socket == INVALID_SOCKET) {
-      cerr << "Accept client socket error..." << endl;
-      closesocket(server_socket);
-      exit(EXIT_FAILURE);
+    // ↓ update the read_fds and timeout value for new round of select
+    // ↓ function's inquiry
+    fd_set read_fds = read_fds_backup;
+    timeval timeout = timeout_backup;
+    sockets_to_be_remove.clear();
+    int read_nums = select(poll_fds_max, &read_fds, nullptr, nullptr, &timeout);
+    if (read_nums == -1) {
+      cerr << "Select function error..." << endl;
+      break;
+    } else if (read_nums == 0) {
+      continue;
     }
 
-    cout << "Client Addr: " << inet_ntoa(client_addr.sin_addr) << ':'
-         << ntohs(client_addr.sin_port) << endl;
+    // there's some file descriptors(here is sockets) are ready to read
+    for (const auto& [fd, sock_addr] : sockets) {
+      if (FD_ISSET(fd, &read_fds)) {
+        if (fd == server_socket) {
+          /* ↓ for server socket, accept client's request ↓ */
+          cout << "Accept client socket..." << endl;
+          handled_socket = accept(server_socket, (sockaddr*)&client_addr,
+                                  &client_addr_lenth);
+          if (handled_socket == INVALID_SOCKET) {
+            cerr << "Accept client socket error..." << endl;
+            continue;
+          }
+          // ↓ accept client's request successful, then add socket address to
+          // ↓ list and add hanled socket to both list and read_fds_backup.
+          // ↓ add socket to read_fds_backup rather than read_fds to prevent the
+          // ↓ influence to curent read_fds status returned by select function
+          sockets.push_back(make_pair(handled_socket, client_addr));
+          FD_SET(handled_socket, &read_fds_backup);
 
-    while (true) {
-      /* ↓ exchange data with client ↓ */
-      PackageHeader package_header;
-      if (GetPackageHeader(handled_socket, package_header) == -2) break;
+          // ↓ only valid in Linux, update the poll_fds_max for select function
+          if (static_cast<int>(handled_socket) >= poll_fds_max)
+            poll_fds_max = handled_socket + 1;
 
-      // check request type
-      switch (package_header.command) {
-        case CMD_Hello: {
-          /* ↓ echo message request ↓ */
-          EchoMessageServer(handled_socket, package_header);
-          break;
+          cout << "Client Addr: " << inet_ntoa(client_addr.sin_addr) << ':'
+               << ntohs(client_addr.sin_port) << endl;
+        } else {
+          /* ↓ for other handled sockets, exchange data with client ↓ */
+          PackageHeader package_header;
+          if (GetPackageHeader(fd, package_header) == -2) {
+            // ↓ client has performed an orderly shutdown, then close the
+            // ↓ corresponding socket and remove socket and socket address from
+            // ↓ list and read_fds_backup remove socket from read_fds_backup
+            // ↓ rather than read_fds to prevent the influence to curent
+            // ↓ read_fds status returned by select function
+            sockets_to_be_remove.push_back(fd);
+            FD_CLR(fd, &read_fds_backup);
+
+            cout << "Client " << inet_ntoa(sock_addr.sin_addr) << ':'
+                 << ntohs(sock_addr.sin_port) << " disconnect..." << endl;
+            closesocket(fd);
+            continue;
+          }
+
+          // check request type
+          switch (package_header.command) {
+            case CMD_Hello: {
+              /* ↓ echo message request ↓ */
+              EchoMessageServer(fd, package_header);
+              break;
+            }
+            case CMD_Calculator: {
+              /* ↓ calculator request ↓ */
+              CalculatorServer(fd, package_header);
+              break;
+            }
+            default: {
+              cerr << "Unidentified command, ";
+              // ↓ if client send an unidentified command, then close the
+              // ↓ corresponding socket and remove socket and socket address
+              // ↓ from list and read_fds_backup remove socket from
+              // ↓ read_fds_backup rather than read_fds to prevent the influence
+              // ↓ to curent read_fds status returned by select function
+              sockets_to_be_remove.push_back(fd);
+              FD_CLR(fd, &read_fds_backup);
+
+              cout << "force disconnect from client "
+                   << inet_ntoa(sock_addr.sin_addr) << ':'
+                   << ntohs(sock_addr.sin_port) << "..." << endl;
+              closesocket(fd);
+              break;
+            }
+          }
         }
-        case CMD_Calculator: {
-          /* ↓ calculator request ↓ */
-          CalculatorServer(handled_socket, package_header);
-          break;
-        }
-        default: cerr << "Unidentified command." << endl; break;
       }
     }
-    cout << "Client " << inet_ntoa(client_addr.sin_addr) << ':'
-         << ntohs(client_addr.sin_port) << " disconnect..." << endl;
-    closesocket(handled_socket);
+
+    // ↓ remove sockets recording in the traversal loop above
+    for (auto fd : sockets_to_be_remove) {
+      sockets.remove_if(
+          [fd](pair<SOCKET, sockaddr_in>& x) { return x.first == fd; });
+    }
   }
 
 /* ↓ close server socket ↓ */
@@ -123,7 +206,7 @@ int main() {
   closesocket(server_socket);
 #endif
 #ifdef PROGRAMMING_ON_LINUX
-  close(server_socket);
+  closesocket(server_socket);
 #endif
   /* Main Body End */
 
